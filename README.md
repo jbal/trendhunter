@@ -60,11 +60,28 @@ Options:
                                   request to complete. If you are receiving
                                   several timeout exceptions, try to increaase
                                   this value.  [default: 10]
-  -f, --format [0|1]              [default: 0]
+  -f, --format [0|1]              The output format. The API default (0) is to
+                                  format the output to the console. If the
+                                  user would prefer to output the details to a
+                                  PowerPoint file, the 1 value can be used.
+                                  [default: 0]
   -l, --loglevel [10|20|30|40|50]
-                                  [default: 20]
-  -d, --directory DIRECTORY
+                                  The log level of the root Python logger. The
+                                  API default is to log anything at or above
+                                  the INFO level. Decrease the value to view
+                                  more verbose logs.  [default: 20]
+  -d, --directory DIRECTORY       The directory to write any output files. If
+                                  one is not passed, the output directory will
+                                  be the current directory.
   -x, --pixels <INTEGER INTEGER>...
+                                  The maximum resolution of any created image
+                                  files. The API default is to limit a
+                                  thumbnail to a dimension of (300, 300). If
+                                  an image is not equal in width and height
+                                  dimension, the increase in resolution will
+                                  be halted when the aspect ratio forces the
+                                  larger dimension to hit the boundary
+                                  specified here.  [default: 300, 300]
   --help                          Show this message and exit.
 ```
 

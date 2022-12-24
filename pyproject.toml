@@ -1,0 +1,69 @@
+[project]
+name = "trendhunter"
+version = "0.1.1"
+license = {file = "LICENSE.txt"}
+authors = [
+    { name = "Jake Ballantyne", email = "jake.david.ballantyne@gmail.com"},
+]
+maintainers = [
+    { name = "Jake Ballantyne", email = "jake.david.ballantyne@gmail.com"},
+]
+description = "Asynchronous TrendHunter API (in Python)"
+dependencies = [
+    "aiohttp>=3.8.3",
+    "beautifulsoup4>=4.11.1",
+    "cssutils>=2.6.0",
+    "click>=8.1.3",
+    "python-pptx>=0.6.21",
+    "python-slugify>=7.0.0",
+    "build>=0.9.0",
+]
+keywords = [
+    "API"
+]
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+homepage = "https://github.com/jbal/trendhunter"
+issues = "https://github.com/jbal/trendhunter/issues"
+repository = "https://github.com/jbal/trendhunter"
+
+[project.scripts]
+trendhunter = "trendhunter.bin.console:cli"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.2.0",
+    "aioresponses>=0.7.4",
+]
+dev = [
+    "pre-commit>=2.20.0",
+]
+
+[build-system]
+requires = [
+    "setuptools>=61.0", "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 79
+target-version = ["py310"]
+include = '\.pyi?$'
+preview = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["trendhunter*"]
+namespaces = false

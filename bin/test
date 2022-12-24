@@ -1,0 +1,6 @@
+#!/bin/bash
+
+LOC=${BASH_SOURCE%/*}
+pushd ${LOC}/.. > /dev/null
+pytest tests
+popd > /dev/null

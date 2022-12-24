@@ -1,0 +1,21 @@
+#!/bin/bash
+
+dist() {
+  python3 -m pip install --upgrade build
+  rm -rf ../dist/ 
+  python3 -m build ../
+}
+
+push() {
+  python3 -m pip install --upgrade twine
+  python3 -m twine upload \
+    --repository-url="https://test.pypi.org/legacy/" \
+    -u "__token__" \
+    -p ${PYPI_TOKEN} \
+    ../dist/*  
+}
+
+LOC=${BASH_SOURCE%/*}
+pushd ${LOC} > /dev/null
+dist && push
+popd > /dev/null

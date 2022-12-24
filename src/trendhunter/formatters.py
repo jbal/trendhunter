@@ -46,8 +46,17 @@ def console(articles: List[Article], context: Context):
 
 
 def slideshow(articles: List[Article], context: Context) -> None:
-    path = (context.directory or Path(os.getcwd())) / f"{context.uid}.pptx"
-    show = Presentation(path if path.exists() else None)
+    path = Path(os.getcwd())
+
+    if context.directory:
+        path = Path(context.directory)
+
+        if not path.exists():
+            path.mkdir(parents=True)
+
+    file_path = path / f"{context.uid}.pptx"
+
+    show = Presentation(file_path if file_path.exists() else None)
 
     title_layout = show.slide_layouts[0]
     title_slide = show.slides.add_slide(title_layout)
@@ -64,7 +73,7 @@ def slideshow(articles: List[Article], context: Context) -> None:
         )
         slide.placeholders[2].text = article.text.description
 
-    show.save(path)
+    show.save(file_path)
     format_console(__name__).info(
-        f'Formatted {len(articles)} articles to "{path}".'
+        f'Formatted {len(articles)} articles to "{file_path}".'
     )

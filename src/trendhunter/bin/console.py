@@ -77,7 +77,6 @@ proxy = click.option(
         "using a proxy server. If you do need to use a proxy, please be aware "
         "of the considerable risk if the provider is not secure."
     ),
-    show_default=True,
 )
 
 timeout = click.option(
@@ -100,7 +99,11 @@ format = click.option(
     "format",
     default="0",
     type=click.Choice(["0", "1"]),
-    help=(),
+    help=(
+        "The output format. The API default (0) is to format the output to the"
+        " console. If the user would prefer to output the details to a"
+        " PowerPoint file, the 1 value can be used."
+    ),
     show_default=True,
 )
 
@@ -118,7 +121,11 @@ log_level = click.option(
             str(logging.CRITICAL),
         ]
     ),
-    help=(),
+    help=(
+        "The log level of the root Python logger. The API default is to "
+        "log anything at or above the INFO level. Decrease the value to "
+        "view more verbose logs."
+    ),
     show_default=True,
 )
 
@@ -126,7 +133,6 @@ directory = click.option(
     "-d",
     "--directory",
     "directory",
-    default=None,
     type=click.Path(
         file_okay=False,
         dir_okay=True,
@@ -134,6 +140,10 @@ directory = click.option(
         writable=True,
         resolve_path=True,
         path_type=Path,
+    ),
+    help=(
+        "The directory to write any output files. If one is not "
+        "passed, the output directory will be the current directory."
     ),
 )
 
@@ -144,6 +154,15 @@ pixels = click.option(
     default=(300, 300),
     type=click.Tuple([int, int]),
     nargs=2,
+    help=(
+        "The maximum resolution of any created image files. The API "
+        "default is to limit a thumbnail to a dimension of (300, 300). "
+        "If an image is not equal in width and height "
+        "dimension, the increase in resolution will be halted when "
+        "the aspect ratio forces the larger dimension to hit "
+        "the boundary specified here."
+    ),
+    show_default=True,
 )
 
 uid = click.argument("uid")

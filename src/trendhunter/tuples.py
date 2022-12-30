@@ -1,4 +1,4 @@
-""""""
+"""Tuples."""
 
 from pathlib import Path
 from typing import NamedTuple, Optional, Tuple
@@ -52,4 +52,4 @@ class Context(NamedTuple):
     uid: str
     page_type: PageType
     pixels: Tuple[int]
-    directory: Optional[Path] = None
+    path: Optional[Path] = None

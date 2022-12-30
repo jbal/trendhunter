@@ -1,4 +1,4 @@
-""""""
+"""Core API code."""
 
 import asyncio
 import logging
@@ -149,7 +149,7 @@ def extract_image_url(resource: Resource) -> Image:
 
 def extract_text(resource: Resource) -> Text:
     soup = BeautifulSoup(resource.content, "html.parser")
-    title = soup.find("h1", attrs={"class": "tha__title1"})
+    title = soup.find("h2", attrs={"class": "tha__title2"})
     description = soup.find("div", attrs={"class": "tha__articleText"})
     meta = soup.find(
         "div",

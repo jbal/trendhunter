@@ -13,11 +13,29 @@ The library can be installed via the Python Package Index,
 ```
 pip install trendhunter
 ```
-**Note** the most recent version is `0.0.2`
+
+## Contributing
+Before contributing, please install the `test` and `dev` versions of
+the library,
+```
+pip install trendhunter[dev,test]
+```
+
+If you contribute and add tests to your contributions, you can run 
+`./bin/test` from the root project directory. The script runs pytest
+using the `/tests` directory as the root. It is not currently configured to accept
+additional pytest options.
+
+Once the package is ready to be uploaded, please complete the
+following in order,
+- Increment the `version` template in `pyproject.toml`
+- Set the `PYPI_TOKEN` environment variable
+- Run `/bin/twine`
+
 
 ## Usage
 The API is implemented through Python Click, a command line
-interface. The API supports 4 subcommands,
+interface. The API implements 4 subcommands,
 - `trends`
 - `lists`
 - `categories`
@@ -28,8 +46,8 @@ required argument. The required argument is the name of the TrendHunter
 site from which you want to base your query. This argument is called the
 `uid`, and must come after the subcommand.
 
-The optional arguments are best described via an example. The following
-excerpt is the Python Click help page for the `trends` subcommand.
+The following excerpt is the Python Click help page for the `trends`
+subcommand. Every subcommand is set up with the same options.
 ```
 Usage: trendhunter trends [OPTIONS] UID
 
@@ -47,7 +65,7 @@ Options:
                                   but can be increased to 100. You may want to
                                   limit concurrency to avoid 429 errors on the
                                   TrendHunter API.  [default: 5]
-  -p, --proxy TEXT                The HTTP url of a proxy server. The API
+  -y, --proxy TEXT                The HTTP url of a proxy server. The API
                                   default is to not use a proxy server, but if
                                   the TrendHunter API bans your IP address,
                                   you can provide one here. Please try to use
@@ -70,9 +88,9 @@ Options:
                                   API default is to log anything at or above
                                   the INFO level. Decrease the value to view
                                   more verbose logs.  [default: 20]
-  -d, --directory DIRECTORY       The directory to write any output files. If
-                                  one is not passed, the output directory will
-                                  be the current directory.
+  -p, --path PATH                 The path to write any output files. If one
+                                  is not passed, the output path will be the
+                                  current path.
   -x, --pixels <INTEGER INTEGER>...
                                   The maximum resolution of any created image
                                   files. The API default is to limit a
@@ -89,22 +107,22 @@ At any point, if you get stuck and would like to reference the
 required and optional arguments, you can view the Click help page
 for either the base `trendhunter` command or one of the subcommands,
 ```
-> trendhunter --help
+trendhunter --help
 ```
 ```
-> trendhunter trends --help
+trendhunter trends --help
 ```
 
 ## Examples
 ```
-> trendhunter trends holiday-giveaways
+trendhunter trends holiday-giveaways
 ```
 ```
-> trendhunter lists 2023-tech-trends
+trendhunter lists 2023-tech-trends
 ```
 ```
->trendhunter categories food
+trendhunter categories food
 ```
 ```
-> trendhunter search candy
+trendhunter search candy
 ```

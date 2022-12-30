@@ -1,79 +1,54 @@
-""""""
+"""Output formatters."""
 
-import os
-from io import BytesIO
-from pathlib import Path
 from typing import List
 
 from pptx import Presentation
 
 from trendhunter.tuples import Article, Context
-from trendhunter.utils import format_console, resize_image
+from trendhunter.utils import (
+    format_console,
+    resize_image,
+    resolve_path,
+)
 
 
 def console(articles: List[Article], context: Context):
     for article in articles:
         format_console(__name__).debug(
             f"""Article ({article.url.rsplit("/")[-1]}) {{
-    url: {{
-        {article.url}
-    }},
-    title: {{
-        {article.text.title}
-    }},
-    description: {{
-        {article.text.description}
-    }},
+    url: {article.url}
+    title: {article.text.title}
+    description: {article.text.description[:40]}... (truncated)
     metadata: {{
-        id: {{
-            {article.text.metadata.eid}
-        }},
-        category: {{
-            {article.text.metadata.cid}
-        }},
-    }},
+        id: {article.text.metadata.eid}
+        category: {article.text.metadata.cid}
+    }}
     image: {{
-        url: {{
-            {article.image.url}
-        }},
-        image: {{
-            {article.image.image[:500]} (truncated to a maximum of 500 bytes)
-        }},
-    }},
+        url: {article.image.url}
+        image: {article.image.image[:40]}... (truncated)
+    }}
 }}
 """
         )
 
 
 def slideshow(articles: List[Article], context: Context) -> None:
-    path = Path(os.getcwd())
+    path = resolve_path(context.path)
 
-    if context.directory:
-        path = Path(context.directory)
-
-        if not path.exists():
-            path.mkdir(parents=True)
-
-    file_path = path / f"{context.uid}.pptx"
-
-    show = Presentation(file_path if file_path.exists() else None)
-
-    title_layout = show.slide_layouts[0]
-    title_slide = show.slides.add_slide(title_layout)
-    title_slide.shapes.title.text = "TrendHunter Ideas & Insights"
-    title_slide.shapes.placeholders[1].text = context.uid
+    if path.exists():
+        show = Presentation(path)
+    else:
+        show = Presentation()
 
     for article in articles:
-        trend_layout = show.slide_layouts[8]
-        slide = show.slides.add_slide(trend_layout)
-
+        slide = show.slides.add_slide(show.slide_layouts[8])
         slide.placeholders[0].text = article.text.title
         slide.placeholders[1].insert_picture(
             resize_image(article.image, context.pixels)
         )
         slide.placeholders[2].text = article.text.description
 
-    show.save(file_path)
+    show.save(path)
     format_console(__name__).info(
-        f'Formatted {len(articles)} articles to "{file_path}".'
+        f'Formatted {len(articles)} articles to "{path}".'
     )

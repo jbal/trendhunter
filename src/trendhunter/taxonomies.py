@@ -1,4 +1,4 @@
-""""""
+"""Taxonomies."""
 
 
 class PageType:

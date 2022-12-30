@@ -1,6 +1,6 @@
 [project]
 name = "trendhunter"
-version = "0.0.2"
+version = "0.0.3"
 license = {file = "LICENSE.txt"}
 authors = [
     { name = "Jake Ballantyne", email = "jake.david.ballantyne@gmail.com"},
@@ -35,9 +35,9 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/jbal/trendhunter"
-issues = "https://github.com/jbal/trendhunter/issues"
-repository = "https://github.com/jbal/trendhunter"
+Homepage = "https://github.com/jbal/trendhunter"
+Issues = "https://github.com/jbal/trendhunter/issues"
+Repository = "https://github.com/jbal/trendhunter"
 
 [project.scripts]
 trendhunter = "trendhunter.bin.console:cli"

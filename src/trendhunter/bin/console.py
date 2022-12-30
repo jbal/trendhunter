@@ -1,4 +1,4 @@
-""""""
+"""Click interface."""
 
 import logging
 from pathlib import Path
@@ -66,7 +66,7 @@ concurrency = click.option(
 )
 
 proxy = click.option(
-    "-p",
+    "-y",
     "--proxy",
     "proxy",
     type=click.STRING,
@@ -129,12 +129,12 @@ log_level = click.option(
     show_default=True,
 )
 
-directory = click.option(
-    "-d",
-    "--directory",
-    "directory",
+path = click.option(
+    "-p",
+    "--path",
+    "path",
     type=click.Path(
-        file_okay=False,
+        file_okay=True,
         dir_okay=True,
         readable=False,
         writable=True,
@@ -142,8 +142,8 @@ directory = click.option(
         path_type=Path,
     ),
     help=(
-        "The directory to write any output files. If one is not "
-        "passed, the output directory will be the current directory."
+        "The path to write any output files. If one is not "
+        "passed, the output path will be the current path."
     ),
 )
 
@@ -181,7 +181,7 @@ def cli() -> None:
 @timeout
 @format
 @log_level
-@directory
+@path
 @pixels
 @uid
 def search(
@@ -192,13 +192,13 @@ def search(
     timeout: int,
     format: str,
     log_level: str,
-    directory: Optional[Path],
+    path: Optional[Path],
     pixels: Tuple[int],
     uid: str,
 ):
     logging.basicConfig(level=int(log_level))
     formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
-    context = Context(slugify(uid), PageType.SEARCH, pixels, directory)
+    context = Context(slugify(uid), PageType.SEARCH, pixels, path)
 
     with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
         for articles in catch_execute(
@@ -218,7 +218,7 @@ def search(
 @timeout
 @format
 @log_level
-@directory
+@path
 @pixels
 @uid
 def categories(
@@ -229,14 +229,14 @@ def categories(
     timeout: int,
     format: str,
     log_level: str,
-    directory: Optional[Path],
+    path: Optional[Path],
     pixels: Tuple[int],
     uid: str,
 ):
     logging.basicConfig(level=int(log_level))
     formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
     context = Context(
-        slugify(uid, separator=""), PageType.CATAGORY, pixels, directory
+        slugify(uid, separator=""), PageType.CATAGORY, pixels, path
     )
 
     with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
@@ -255,7 +255,7 @@ def categories(
 @timeout
 @format
 @log_level
-@directory
+@path
 @pixels
 @uid
 def lists(
@@ -266,13 +266,13 @@ def lists(
     timeout: int,
     format: str,
     log_level: str,
-    directory: Optional[Path],
+    path: Optional[Path],
     pixels: Tuple[int],
     uid: str,
 ):
     logging.basicConfig(level=int(log_level))
     formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
-    context = Context(slugify(uid), PageType.LIST, pixels, directory)
+    context = Context(slugify(uid), PageType.LIST, pixels, path)
 
     with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
         for articles in catch_execute(
@@ -290,7 +290,7 @@ def lists(
 @timeout
 @format
 @log_level
-@directory
+@path
 @pixels
 @uid
 def trends(
@@ -301,13 +301,13 @@ def trends(
     timeout: int,
     format: str,
     log_level: str,
-    directory: Optional[Path],
+    path: Optional[Path],
     pixels: Tuple[int],
     uid: str,
 ):
     logging.basicConfig(level=int(log_level))
     formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
-    context = Context(slugify(uid), PageType.TREND, pixels, directory)
+    context = Context(slugify(uid), PageType.TREND, pixels, path)
 
     with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
         for articles in catch_execute(

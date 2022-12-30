@@ -9,7 +9,16 @@ from the TrendHunter Ideas database.
 - `search`
 
 ## Installation
-The library can be installed via the Python Package Index,
+**Optional** Create a dedicated directory, create an isolated
+virtual environment, and activate the environment.
+```
+mkdir trendhunter && cd "$_"
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Using `pip`, install the `trendhunter` library from the Python
+Package Index,
 ```
 pip install trendhunter
 ```

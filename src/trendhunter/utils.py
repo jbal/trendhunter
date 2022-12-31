@@ -48,7 +48,8 @@ def resize_image(image: Image, pixels: Tuple[int]) -> BytesIO:
 
 def resolve_path(path: Optional[Path] = None) -> Path:
     path = path or Path(".").resolve()
-    if path.is_dir():
+
+    if not path.suffix:
         path.mkdir(parents=True, exist_ok=True)
         path = path / "template.pptx"
     else:

@@ -124,13 +124,13 @@ trendhunter trends --help
 
 ## Examples
 ```
-trendhunter trends holiday-giveaways
+trendhunter trends -n 5 -f 1 -p ../test/ holiday-giveaways
 ```
 ```
 trendhunter lists 2023-tech-trends
 ```
 ```
-trendhunter categories food
+trendhunter categories -l 10 -f 1 -n 200 -k 3 food
 ```
 ```
 trendhunter search candy

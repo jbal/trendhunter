@@ -236,7 +236,7 @@ def trends(
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
-            api.execute, slugify(uid), PageType.TREND, n, m
+            api.execute, slugify(uid), PageType.TREND, n, m, set()
         ):
             for formatter in formatters:
                 formatter(articles, context)
@@ -269,7 +269,7 @@ def lists(
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
-            api.execute, slugify(uid), PageType.LIST, n, m
+            api.execute, slugify(uid), PageType.LIST, n, m, set()
         ):
             for formatter in formatters:
                 formatter(articles, context)
@@ -302,7 +302,12 @@ def categories(
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
-            api.execute, slugify(uid, separator=""), PageType.CATAGORY, n, m
+            api.execute,
+            slugify(uid, separator=""),
+            PageType.CATAGORY,
+            n,
+            m,
+            set(),
         ):
             for formatter in formatters:
                 formatter(articles, context)
@@ -335,7 +340,7 @@ def search(
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
-            api.execute, slugify(uid), PageType.SEARCH, n, m
+            api.execute, slugify(uid), PageType.SEARCH, n, m, set()
         ):
             for formatter in formatters:
                 formatter(articles, context)

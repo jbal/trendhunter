@@ -341,7 +341,7 @@ class TrendHunterAPI:
         )
 
     def execute(
-        self, uid: str, page_type: PageType, n: int, m: int, urls: set = set()
+        self, uid: str, page_type: PageType, n: int, m: int, urls: set
     ):
         extra, extra_resources = [], []
 

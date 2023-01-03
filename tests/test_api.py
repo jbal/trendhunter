@@ -14,15 +14,13 @@ from tests.utils import (
     API,
     CDN,
     AIOResponse,
-    Decompose,
     Lists,
     Trends,
     TrendsAPI,
-    read_html,
 )
-from trendhunter.api import TRENDHUNTER_URL, ResourceError, TrendHunterAPI
+from trendhunter.api import TRENDHUNTER_URL, TrendHunterAPI
 from trendhunter.taxonomies import PageType
-from trendhunter.tuples import Article, Context, Image, Metadata, Text
+from trendhunter.tuples import Article, Image, Metadata, Text
 
 
 def image():
@@ -73,7 +71,6 @@ def add_responses(
 
 
 def test_api_001():
-    context = Context("#AA0", PageType.TREND, (300, 300))
     expected = [
         [
             TestArticle("#AA0"),
@@ -88,11 +85,9 @@ def test_api_001():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.TREND, 5, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -100,7 +95,6 @@ def test_api_001():
 
 
 def test_api_002():
-    context = Context("#AA0", PageType.TREND, (300, 300))
     expected = [
         [
             TestArticle("#AA0"),
@@ -117,11 +111,9 @@ def test_api_002():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=3, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.TREND, 5, 3, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -129,7 +121,6 @@ def test_api_002():
 
 
 def test_api_003():
-    context = Context("#AA0", PageType.TREND, (300, 300))
     expected = [
         [
             TestArticle("#AA0"),
@@ -165,11 +156,9 @@ def test_api_003():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=20, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.TREND, 20, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -177,24 +166,19 @@ def test_api_003():
 
 
 def test_api_004():
-    context = Context("#AA0", PageType.TREND, (300, 300))
-
     with aioresponses() as m:
         add_responses(m, trends=Trends(status=404))
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             with pytest.raises(ClientError):
                 for chunk_of_articles in api.execute(
-                    context.uid, context.page_type
+                    "#AA0", PageType.TREND, 5, 5, set()
                 ):
                     articles.append(chunk_of_articles)
 
 
 def test_api_005():
-    context = Context("#AA0", PageType.LIST, (300, 300))
     expected = [
         [
             TestArticle("#B0"),
@@ -209,11 +193,9 @@ def test_api_005():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.LIST, 5, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -221,7 +203,6 @@ def test_api_005():
 
 
 def test_api_006():
-    context = Context("#AA0", PageType.LIST, (300, 300))
     expected = [
         [
             TestArticle("#B0"),
@@ -238,11 +219,9 @@ def test_api_006():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=3, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.LIST, 5, 3, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -250,7 +229,6 @@ def test_api_006():
 
 
 def test_api_007():
-    context = Context("#AA0", PageType.LIST, (300, 300))
     expected = [
         [
             TestArticle("#B0"),
@@ -286,11 +264,9 @@ def test_api_007():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=20, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.LIST, 20, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -298,24 +274,19 @@ def test_api_007():
 
 
 def test_api_008():
-    context = Context("#AA0", PageType.LIST, (300, 300))
-
     with aioresponses() as m:
         add_responses(m, lists=Lists(status=404))
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             with pytest.raises(ClientError):
                 for chunk_of_articles in api.execute(
-                    context.uid, context.page_type
+                    "#AA0", PageType.LIST, 5, 5, set()
                 ):
                     articles.append(chunk_of_articles)
 
 
 def test_api_009():
-    context = Context("#AA0", PageType.CATAGORY, (300, 300))
     expected = [
         [
             TestArticle("#C0"),
@@ -330,11 +301,9 @@ def test_api_009():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.CATAGORY, 5, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -342,7 +311,6 @@ def test_api_009():
 
 
 def test_api_010():
-    context = Context("#AA0", PageType.CATAGORY, (300, 300))
     expected = [
         [
             TestArticle("#C0"),
@@ -359,11 +327,9 @@ def test_api_010():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=3, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.CATAGORY, 5, 3, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -371,7 +337,6 @@ def test_api_010():
 
 
 def test_api_011():
-    context = Context("#AA0", PageType.CATAGORY, (300, 300))
     expected = [
         [
             TestArticle("#C0"),
@@ -413,11 +378,9 @@ def test_api_011():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=24, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.CATAGORY, 24, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -425,24 +388,19 @@ def test_api_011():
 
 
 def test_api_012():
-    context = Context("#AA0", PageType.CATAGORY, (300, 300))
-
     with aioresponses() as m:
         add_responses(m, api=API(status=404))
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             with pytest.raises(ClientError):
                 for chunk_of_articles in api.execute(
-                    context.uid, context.page_type
+                    "#AA0", PageType.CATAGORY, 5, 5, set()
                 ):
                     articles.append(chunk_of_articles)
 
 
 def test_api_013():
-    context = Context("#AA0", PageType.SEARCH, (300, 300))
     expected = [
         [
             TestArticle("#C0"),
@@ -457,11 +415,9 @@ def test_api_013():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.SEARCH, 5, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -469,7 +425,6 @@ def test_api_013():
 
 
 def test_api_014():
-    context = Context("#AA0", PageType.SEARCH, (300, 300))
     expected = [
         [
             TestArticle("#C0"),
@@ -486,11 +441,9 @@ def test_api_014():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=3, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.SEARCH, 5, 3, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -498,7 +451,6 @@ def test_api_014():
 
 
 def test_api_015():
-    context = Context("#AA0", PageType.SEARCH, (300, 300))
     expected = [
         [
             TestArticle("#C0"),
@@ -540,11 +492,9 @@ def test_api_015():
         add_responses(m)
         articles = []
 
-        with TrendHunterAPI(
-            n=24, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             for chunk_of_articles in api.execute(
-                context.uid, context.page_type
+                "#AA0", PageType.SEARCH, 24, 5, set()
             ):
                 articles.append(chunk_of_articles)
 
@@ -552,17 +502,13 @@ def test_api_015():
 
 
 def test_api_016():
-    context = Context("#AA0", PageType.SEARCH, (300, 300))
-
     with aioresponses() as m:
         add_responses(m, api=API(status=404))
         articles = []
 
-        with TrendHunterAPI(
-            n=5, chunk_size=5, concurrency=5, proxy=None, timeout=10
-        ) as api:
+        with TrendHunterAPI(concurrency=5, proxy=None, timeout=10) as api:
             with pytest.raises(ClientError):
                 for chunk_of_articles in api.execute(
-                    context.uid, context.page_type
+                    "#AA0", PageType.SEARCH, 5, 5, set()
                 ):
                     articles.append(chunk_of_articles)

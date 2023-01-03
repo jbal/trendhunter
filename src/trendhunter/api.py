@@ -239,14 +239,10 @@ class PageTypeURLIterator(URLIterator):
 class TrendHunterAPI:
     def __init__(
         self,
-        n: int,
-        chunk_size: int,
         concurrency: int,
         proxy: Optional[str],
         timeout: int,
     ):
-        self.n = n
-        self.chunk_size = chunk_size
         self.concurrency = concurrency
         self.proxy = proxy
         self.timeout = timeout
@@ -263,16 +259,16 @@ class TrendHunterAPI:
     def _fetch_all(
         self,
         iterator: URLIterator,
-        n: Optional[int] = None,
-        extra: List[List[str]] = [],
-        extra_resources: List[Tuple[str]] = [],
+        n: int,
+        m: int,
+        all_urls: set,
+        extra: List[List[str]],
+        extra_resources: List[Tuple[str]],
     ) -> Generator[Article, None, None]:
-        all_urls = []
-        all_unique_urls = set()
-        failsafe = 0
+        urls = []
         iterator = chain(iter(extra_resources), iterator)
 
-        while len(all_urls) < (n if n is not None else self.n):
+        while len(urls) < n:
             # fetch 3 results from the iterator at a time
             resource_urls = [next(iterator), next(iterator), next(iterator)]
             resources = asyncio.run(
@@ -286,51 +282,37 @@ class TrendHunterAPI:
             )
 
             for resource in filter(None, resources):
-                limit = (n if n is not None else self.n) - len(all_urls)
+                limit = n - len(urls)
                 extracted_urls = extract_urls(resource)[:limit]
 
-                for urls in extracted_urls:
-                    # do not wrap in `URLPair`, would just have to
-                    # be unpacked in a moment
-                    url_pair = (urls.url, urls.image_url)
-
-                    if url_pair not in all_unique_urls:
-                        all_urls.append(list(url_pair))
-                        all_unique_urls.add(url_pair)
-
-            failsafe += 1
-
-            if failsafe > 1000:
-                raise ResourceError(
-                    "Unable to parse out the required resources after "
-                    "hitting 1000 resource pages, the failsafe mechanism to "
-                    "halt the fetch has been activated."
-                )
+                for extracted_url in extracted_urls:
+                    if extracted_url.url not in all_urls:
+                        urls.append(
+                            [extracted_url.url, extracted_url.image_url]
+                        )
+                        all_urls.add(extracted_url.url)
 
         # mix in the extra article urls and remove duplicate
         # resourced articles while maintaining order
-        all_urls = extra + all_urls
+        urls = extra + urls
 
-        while all_urls:
-            chunk_urls, all_urls = (
-                all_urls[: self.chunk_size],
-                all_urls[self.chunk_size :],
-            )
+        while urls:
+            chunked_urls, urls = urls[:m], urls[m:]
             subresources = asyncio.run(
                 async_get_urls(
-                    chunk_urls, self.concurrency, self.proxy, self.timeout
+                    chunked_urls, self.concurrency, self.proxy, self.timeout
                 )
             )
 
             articles = []
 
-            for urls, resources in zip(chunk_urls, subresources):
+            for chunked_url, resources in zip(chunked_urls, subresources):
                 # `_async_get_url` has previously logged this error
                 if not (resources[0] and resources[1]):
                     continue
 
                 text = extract_text(resources[0])
-                image = Image(urls[1], resources[1].content)
+                image = Image(chunked_url[1], resources[1].content)
 
                 if not (text.title or text.description or text.metadata):
                     format_console(__name__).error(
@@ -339,7 +321,7 @@ class TrendHunterAPI:
                     )
                     continue
 
-                articles.append(Article(urls[0], text, image))
+                articles.append(Article(chunked_url[0], text, image))
 
             yield articles
 
@@ -358,7 +340,9 @@ class TrendHunterAPI:
             url, extract_text(resources[0]), extract_image_url(resources[0])
         )
 
-    def execute(self, uid: str, page_type: PageType):
+    def execute(
+        self, uid: str, page_type: PageType, n: int, m: int, urls: set = set()
+    ):
         extra, extra_resources = [], []
 
         if page_type in [PageType.TREND, PageType.LIST]:
@@ -371,7 +355,11 @@ class TrendHunterAPI:
                     f'The metadata was not parsed from "{article.url}".'
                 )
 
-            if page_type == PageType.TREND and article.image.url:
+            if (
+                page_type == PageType.TREND
+                and article.image.url
+                and article.url not in urls
+            ):
                 extra = [[article.url, article.image.url]]
 
             extra_resources = [article.url]
@@ -385,5 +373,5 @@ class TrendHunterAPI:
             iterator = PageTypeURLIterator(uid, page_type)
 
         yield from self._fetch_all(
-            iterator, self.n - len(extra), extra, extra_resources
+            iterator, n - len(extra), m, urls, extra, extra_resources
         )

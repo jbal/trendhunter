@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, List
 
 import click
 from aiohttp import ClientError
@@ -15,6 +15,12 @@ from trendhunter.tuples import Context
 from trendhunter.utils import format_console
 
 FORMATTERS = [console, slideshow]
+ITEMS = {
+    "1": PageType.TREND,
+    "2": PageType.LIST,
+    "3": PageType.CATAGORY,
+    "4": PageType.SEARCH,
+}
 
 
 def catch_execute(func: Callable, *args):
@@ -22,6 +28,19 @@ def catch_execute(func: Callable, *args):
         yield from func(*args)
     except (ResourceError, ClientError) as e:
         format_console(__name__).critical(f"({type(e).__name__}) {e}")
+
+
+def setup(
+    log_level: int,
+    format: int,
+    pixels: Tuple[int],
+    path: Path,
+) -> Tuple[List[Callable], Context]:
+    logging.basicConfig(level=int(log_level))
+    formatters = set([FORMATTERS[0], FORMATTERS[format]])
+    context = Context(pixels, path)
+
+    return formatters, context
 
 
 n = click.option(
@@ -37,10 +56,9 @@ n = click.option(
     show_default=True,
 )
 
-chunk_size = click.option(
-    "-k",
-    "--chunksize",
-    "chunk_size",
+m = click.option(
+    "-m",
+    "m",
     default=100,
     type=click.INT,
     help=(
@@ -152,7 +170,7 @@ pixels = click.option(
     "--pixels",
     "pixels",
     default=(300, 300),
-    type=click.Tuple([int, int]),
+    type=click.Tuple([click.INT, click.INT]),
     nargs=2,
     help=(
         "The maximum resolution of any created image files. The API "
@@ -165,6 +183,24 @@ pixels = click.option(
     show_default=True,
 )
 
+items = click.option(
+    "-i",
+    "--item",
+    "items",
+    required=True,
+    multiple=True,
+    type=click.Tuple(
+        [
+            click.STRING,
+            click.Choice(ITEMS.keys()),
+            click.INT,
+            click.INT,
+        ]
+    ),
+    nargs=4,
+    help=(),
+)
+
 uid = click.argument("uid")
 
 
@@ -175,116 +211,7 @@ def cli() -> None:
 
 @cli.command()
 @n
-@chunk_size
-@concurrency
-@proxy
-@timeout
-@format
-@log_level
-@path
-@pixels
-@uid
-def search(
-    n: int,
-    chunk_size: int,
-    concurrency: int,
-    proxy: Optional[str],
-    timeout: int,
-    format: str,
-    log_level: str,
-    path: Optional[Path],
-    pixels: Tuple[int],
-    uid: str,
-):
-    logging.basicConfig(level=int(log_level))
-    formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
-    context = Context(slugify(uid), PageType.SEARCH, pixels, path)
-
-    with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
-        for articles in catch_execute(
-            api.execute,
-            context.uid,
-            context.page_type,
-        ):
-            for formatter in formatters:
-                formatter(articles, context)
-
-
-@cli.command()
-@n
-@chunk_size
-@concurrency
-@proxy
-@timeout
-@format
-@log_level
-@path
-@pixels
-@uid
-def categories(
-    n: int,
-    chunk_size: int,
-    concurrency: int,
-    proxy: Optional[str],
-    timeout: int,
-    format: str,
-    log_level: str,
-    path: Optional[Path],
-    pixels: Tuple[int],
-    uid: str,
-):
-    logging.basicConfig(level=int(log_level))
-    formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
-    context = Context(
-        slugify(uid, separator=""), PageType.CATAGORY, pixels, path
-    )
-
-    with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
-        for articles in catch_execute(
-            api.execute, context.uid, context.page_type
-        ):
-            for formatter in formatters:
-                formatter(articles, context)
-
-
-@cli.command()
-@n
-@chunk_size
-@concurrency
-@proxy
-@timeout
-@format
-@log_level
-@path
-@pixels
-@uid
-def lists(
-    n: int,
-    chunk_size: int,
-    concurrency: int,
-    proxy: Optional[str],
-    timeout: int,
-    format: str,
-    log_level: str,
-    path: Optional[Path],
-    pixels: Tuple[int],
-    uid: str,
-):
-    logging.basicConfig(level=int(log_level))
-    formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
-    context = Context(slugify(uid), PageType.LIST, pixels, path)
-
-    with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
-        for articles in catch_execute(
-            api.execute, context.uid, context.page_type
-        ):
-            for formatter in formatters:
-                formatter(articles, context)
-
-
-@cli.command()
-@n
-@chunk_size
+@m
 @concurrency
 @proxy
 @timeout
@@ -295,7 +222,7 @@ def lists(
 @uid
 def trends(
     n: int,
-    chunk_size: int,
+    m: int,
     concurrency: int,
     proxy: Optional[str],
     timeout: int,
@@ -305,13 +232,142 @@ def trends(
     pixels: Tuple[int],
     uid: str,
 ):
-    logging.basicConfig(level=int(log_level))
-    formatters = set([FORMATTERS[0], FORMATTERS[int(format)]])
-    context = Context(slugify(uid), PageType.TREND, pixels, path)
+    formatters, context = setup(log_level, int(format), pixels, path)
 
-    with TrendHunterAPI(n, chunk_size, concurrency, proxy, timeout) as api:
+    with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
-            api.execute, context.uid, context.page_type
+            api.execute, slugify(uid), PageType.TREND, n, m
         ):
             for formatter in formatters:
                 formatter(articles, context)
+
+
+@cli.command()
+@n
+@m
+@concurrency
+@proxy
+@timeout
+@format
+@log_level
+@path
+@pixels
+@uid
+def lists(
+    n: int,
+    m: int,
+    concurrency: int,
+    proxy: Optional[str],
+    timeout: int,
+    format: str,
+    log_level: str,
+    path: Optional[Path],
+    pixels: Tuple[int],
+    uid: str,
+):
+    formatters, context = setup(log_level, int(format), pixels, path)
+
+    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+        for articles in catch_execute(
+            api.execute, slugify(uid), PageType.LIST, n, m
+        ):
+            for formatter in formatters:
+                formatter(articles, context)
+
+
+@cli.command()
+@n
+@m
+@concurrency
+@proxy
+@timeout
+@format
+@log_level
+@path
+@pixels
+@uid
+def categories(
+    n: int,
+    m: int,
+    concurrency: int,
+    proxy: Optional[str],
+    timeout: int,
+    format: str,
+    log_level: str,
+    path: Optional[Path],
+    pixels: Tuple[int],
+    uid: str,
+):
+    formatters, context = setup(log_level, int(format), pixels, path)
+
+    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+        for articles in catch_execute(
+            api.execute, slugify(uid, separator=""), PageType.CATAGORY, n, m
+        ):
+            for formatter in formatters:
+                formatter(articles, context)
+
+
+@cli.command()
+@n
+@m
+@concurrency
+@proxy
+@timeout
+@format
+@log_level
+@path
+@pixels
+@uid
+def search(
+    n: int,
+    m: int,
+    concurrency: int,
+    proxy: Optional[str],
+    timeout: int,
+    format: str,
+    log_level: str,
+    path: Optional[Path],
+    pixels: Tuple[int],
+    uid: str,
+):
+    formatters, context = setup(log_level, int(format), pixels, path)
+
+    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+        for articles in catch_execute(
+            api.execute, slugify(uid), PageType.SEARCH, n, m
+        ):
+            for formatter in formatters:
+                formatter(articles, context)
+
+
+@cli.command()
+@concurrency
+@proxy
+@timeout
+@format
+@log_level
+@path
+@pixels
+@items
+def assortment(
+    concurrency: int,
+    proxy: Optional[str],
+    timeout: int,
+    format: str,
+    log_level: str,
+    path: Optional[Path],
+    pixels: Tuple[int],
+    items: List[Tuple[str, int, int, int]],
+):
+    formatters, context = setup(log_level, int(format), pixels, path)
+
+    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+        all_urls = set()
+
+        for uid, page_type, n, m in items:
+            for articles in catch_execute(
+                api.execute, slugify(uid), ITEMS[page_type], n, m, all_urls
+            ):
+                for formatter in formatters:
+                    formatter(articles, context)

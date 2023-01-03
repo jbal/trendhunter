@@ -49,7 +49,5 @@ class Resource(NamedTuple):
 
 class Context(NamedTuple):
 
-    uid: str
-    page_type: PageType
     pixels: Tuple[int]
     path: Optional[Path] = None

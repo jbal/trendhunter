@@ -33,12 +33,12 @@ def catch_execute(func: Callable, *args):
 def setup(
     log_level: int,
     format: int,
-    pixels: Tuple[int],
+    size: Tuple[int],
     path: Path,
 ) -> Tuple[List[Callable], Context]:
     logging.basicConfig(level=int(log_level))
     formatters = set([FORMATTERS[0], FORMATTERS[format]])
-    context = Context(pixels, path)
+    context = Context(size, path)
     return formatters, context
 
 
@@ -177,11 +177,11 @@ passed, the output path will be the current path.
 """,
 )
 
-pixels = click.option(
-    "-x",
-    "--pixels",
-    "pixels",
-    default=(300, 300),
+size = click.option(
+    "-s",
+    "--size",
+    "size",
+    default=(800, 800),
     type=click.Tuple([click.INT, click.INT]),
     nargs=2,
     help="""
@@ -243,7 +243,7 @@ def cli() -> None:
 @format
 @log_level
 @path
-@pixels
+@size
 @uid
 def trends(
     n: int,
@@ -254,10 +254,10 @@ def trends(
     format: str,
     log_level: str,
     path: Optional[Path],
-    pixels: Tuple[int],
+    size: Tuple[int],
     uid: str,
 ):
-    formatters, context = setup(log_level, int(format), pixels, path)
+    formatters, context = setup(log_level, int(format), size, path)
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
@@ -276,7 +276,7 @@ def trends(
 @format
 @log_level
 @path
-@pixels
+@size
 @uid
 def lists(
     n: int,
@@ -287,10 +287,10 @@ def lists(
     format: str,
     log_level: str,
     path: Optional[Path],
-    pixels: Tuple[int],
+    size: Tuple[int],
     uid: str,
 ):
-    formatters, context = setup(log_level, int(format), pixels, path)
+    formatters, context = setup(log_level, int(format), size, path)
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
@@ -309,7 +309,7 @@ def lists(
 @format
 @log_level
 @path
-@pixels
+@size
 @best
 @uid
 def categories(
@@ -321,11 +321,11 @@ def categories(
     format: str,
     log_level: str,
     path: Optional[Path],
-    pixels: Tuple[int],
+    size: Tuple[int],
     best: bool,
     uid: str,
 ):
-    formatters, context = setup(log_level, int(format), pixels, path)
+    formatters, context = setup(log_level, int(format), size, path)
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
@@ -350,7 +350,7 @@ def categories(
 @format
 @log_level
 @path
-@pixels
+@size
 @best
 @uid
 def search(
@@ -362,11 +362,11 @@ def search(
     format: str,
     log_level: str,
     path: Optional[Path],
-    pixels: Tuple[int],
+    size: Tuple[int],
     best: bool,
     uid: str,
 ):
-    formatters, context = setup(log_level, int(format), pixels, path)
+    formatters, context = setup(log_level, int(format), size, path)
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
@@ -389,7 +389,7 @@ def search(
 @format
 @log_level
 @path
-@pixels
+@size
 @best
 @items
 def assortment(
@@ -399,11 +399,11 @@ def assortment(
     format: str,
     log_level: str,
     path: Optional[Path],
-    pixels: Tuple[int],
+    size: Tuple[int],
     best: bool,
     items: List[Tuple[str, int, int, int]],
 ):
-    formatters, context = setup(log_level, int(format), pixels, path)
+    formatters, context = setup(log_level, int(format), size, path)
 
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         all_urls = set()

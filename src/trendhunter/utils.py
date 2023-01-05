@@ -30,11 +30,11 @@ def format_console(name: str) -> Logger:
     return logger
 
 
-def resize_image(image: Image, pixels: Tuple[int]) -> BytesIO:
-    im = PIL.Image.open(BytesIO(image.image))
+def resize_image(image: Image, size: Tuple[int]) -> BytesIO:
+    im = PIL.Image.open(BytesIO(image.image)).convert("RGB")
     image_buf = BytesIO()
 
-    im.thumbnail(pixels, PIL.Image.ANTIALIAS)
+    im.thumbnail(size, PIL.Image.ANTIALIAS)
     format_console(__name__).info(
         f'Resized image "{image.url}" to {im.size[0]}, {im.size[1]} (width,'
         " height)."

@@ -49,5 +49,5 @@ class Resource(NamedTuple):
 
 class Context(NamedTuple):
 
-    pixels: Tuple[int]
+    size: Tuple[int]
     path: Optional[Path] = None

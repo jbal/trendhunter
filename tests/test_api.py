@@ -18,7 +18,7 @@ from tests.utils import (
     Trends,
     TrendsAPI,
 )
-from trendhunter.api import TRENDHUNTER_URL, TrendHunterAPI
+from trendhunter.api import BASE_URL, TrendHunterAPI
 from trendhunter.taxonomies import PageType
 from trendhunter.tuples import Article, Image, Metadata, Text
 
@@ -32,7 +32,7 @@ def image():
 
 def TestArticle(uid: str) -> Article:
     return Article(
-        url=urljoin(TRENDHUNTER_URL, f"trends/{uid}"),
+        url=urljoin(BASE_URL, f"trends/{uid}"),
         text=Text("test", "test", Metadata("test", "test")),
         image=Image(f"https://cdn.trendhunterstatic.com/{uid}", image()),
     )

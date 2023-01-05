@@ -138,12 +138,7 @@ be passed to the API via the console,
   -p, --path PATH                 The path to write any output files. If one
                                   is not passed, the output path will be the
                                   current path.
-  -t, --timeout INTEGER           Number of seconds until a request times out.
-                                  The API default is to allow 10 seconds for a
-                                  request to complete. If you are receiving
-                                  several timeout exceptions, try to increaase
-                                  this value.  [default: 10]
-  -x, --pixels <INTEGER INTEGER>...
+  -s, --size <INTEGER INTEGER>...
                                   The maximum resolution of any created image
                                   files. The API default is to limit a
                                   thumbnail to a dimension of (300, 300). If
@@ -151,7 +146,12 @@ be passed to the API via the console,
                                   dimension, the increase in resolution will
                                   be halted when the aspect ratio forces the
                                   larger dimension to hit the boundary
-                                  specified here.  [default: 300, 300]
+                                  specified here.  [default: 800, 800]
+  -t, --timeout INTEGER           Number of seconds until a request times out.
+                                  The API default is to allow 10 seconds for a
+                                  request to complete. If you are receiving
+                                  several timeout exceptions, try to increaase
+                                  this value.  [default: 10]
   -y, --proxy TEXT                The HTTP url of a proxy server. The API
                                   default is to not use a proxy server, but if
                                   the TrendHunter API bans your IP address,

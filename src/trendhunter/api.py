@@ -22,7 +22,8 @@ from trendhunter.tuples import (
 )
 from trendhunter.utils import format_console
 
-TRENDHUNTER_URL = "https://www.trendhunter.com/"
+STATIC_URL = "https://cdn.trendhunterstatic.com/thumbs/"
+BASE_URL = "https://www.trendhunter.com/"
 
 
 class ResourceError(Exception):
@@ -121,29 +122,38 @@ def extract_urls(resource: Resource) -> List[URLPair]:
 
     urls = []
     elements = soup.find_all(
-        "a", attrs={"class": "thar", "href": href_contains_trends}
+        "a",
+        attrs={"class": "thar", "href": href_contains_trends, "data-id": True},
     )
 
     for element in elements:
-        image = element.find("img", attrs={"data-src": True})
-
-        if image:
-            urls.append(
-                URLPair(
-                    urljoin(
-                        TRENDHUNTER_URL, element["href"].replace("\\", "")
-                    ),
-                    image["data-src"].replace("\\", ""),
-                )
-            )
+        url = urljoin(BASE_URL, element["href"].replace("\\", ""))
+        image_url = urljoin(
+            STATIC_URL,
+            "{}/{}.jpeg".format(
+                element["data-id"][:3], url.rsplit("/", 1)[-1]
+            ),
+        )
+        urls.append(URLPair(url, image_url))
 
     return urls
 
 
-def extract_image_url(resource: Resource) -> Image:
+def extract_image_url_only(resource: Resource) -> Image:
     soup = BeautifulSoup(resource.content, "html.parser")
-    img = soup.find("img", attrs={"class": "gal__mainImage", "data-src": True})
-    image_url = img["data-src"].replace("\\", "") if img else None
+    body = soup.find(
+        "body", attrs={"class": "th ", "data-url": True, "data-id": True}
+    )
+    image_url = None
+
+    if body:
+        image_url = urljoin(
+            STATIC_URL,
+            "{}/{}.jpeg".format(
+                body["data-id"][:3], body["data-url"].rsplit("/")[-1]
+            ),
+        )
+
     return Image(image_url)
 
 
@@ -202,9 +212,7 @@ class ArticleURLIterator(URLIterator):
         else:
             params["cid"] = self.cid
 
-        return sync_url_and_params(
-            urljoin(TRENDHUNTER_URL, PageType.TREND), params
-        )
+        return sync_url_and_params(urljoin(BASE_URL, PageType.TREND), params)
 
 
 class PageTypeURLIterator(URLIterator):
@@ -231,7 +239,7 @@ class PageTypeURLIterator(URLIterator):
         if self.is_best:
             params["s"] = "best"
 
-        return sync_url_and_params(TRENDHUNTER_URL, params)
+        return sync_url_and_params(BASE_URL, params)
 
 
 class TrendHunterAPI:
@@ -335,7 +343,9 @@ class TrendHunterAPI:
         )
 
         return Article(
-            url, extract_text(resources[0]), extract_image_url(resources[0])
+            url,
+            extract_text(resources[0]),
+            extract_image_url_only(resources[0]),
         )
 
     def execute(
@@ -350,9 +360,7 @@ class TrendHunterAPI:
         extra, extra_resources = [], []
 
         if page_type in [PageType.TREND, PageType.LIST]:
-            article = self._fetch_one(
-                urljoin(TRENDHUNTER_URL, f"{page_type}/{uid}")
-            )
+            article = self._fetch_one(urljoin(BASE_URL, f"{page_type}/{uid}"))
 
             if not article.text.metadata:
                 raise ResourceError(

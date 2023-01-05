@@ -44,7 +44,7 @@ def slideshow(articles: List[Article], context: Context) -> None:
         slide = show.slides.add_slide(show.slide_layouts[8])
         slide.placeholders[0].text = article.text.title
         slide.placeholders[1].insert_picture(
-            resize_image(article.image, context.pixels)
+            resize_image(article.image, context.size)
         )
         slide.placeholders[2].text = article.text.description
 

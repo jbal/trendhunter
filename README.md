@@ -55,51 +55,61 @@ required argument. The required argument is the name of the TrendHunter
 site from which you want to base your query. This argument is called the
 `uid`, and must come after the subcommand.
 
-The following excerpt is the Python Click help page for the `trends`
-subcommand. Every subcommand is set up with the same options.
+The following excerpt describes every option that can be passed to
+the API via the console,
 ```
-Usage: trendhunter trends [OPTIONS] UID
-
-Options:
-  -n INTEGER                      Number of articles. The API default is to
-                                  return 50 articles matching the provided
-                                  uid, but the `n` option is used to customize
-                                  this value.  [default: 50]
-  -k, --chunksize INTEGER         Size of a simultaneously-processed article
-                                  chunk. The API default is to process 100
-                                  articles at one time. Decrease this value to
-                                  reduce memory usage.  [default: 100]
-  -c, --concurrency INTEGER       Number of concurrent requests. The API
-                                  default is to send 5 concurrent requests,
+  -b, --best                      Specify that the API should use the 'best'
+                                  searching algorithm. By default the API is
+                                  configured to query the default results
+                                  page.
+  -c, --concurrency INTEGER       "Number of concurrent requests. The API
+                                  default is to send 5 "concurrent requests,
                                   but can be increased to 100. You may want to
-                                  limit concurrency to avoid 429 errors on the
-                                  TrendHunter API.  [default: 5]
-  -y, --proxy TEXT                The HTTP url of a proxy server. The API
-                                  default is to not use a proxy server, but if
-                                  the TrendHunter API bans your IP address,
-                                  you can provide one here. Please try to use
-                                  a VPN before resorting to using a proxy
-                                  server. If you do need to use a proxy,
-                                  please be aware of the considerable risk if
-                                  the provider is not secure.
-  -t, --timeout INTEGER           Number of seconds until a request times out.
-                                  The API default is to allow 10 seconds for a
-                                  request to complete. If you are receiving
-                                  several timeout exceptions, try to increaase
-                                  this value.  [default: 10]
+                                  "limit concurrency to avoid 429 errors on
+                                  the TrendHunter API.  [default: 5]
   -f, --format [0|1]              The output format. The API default (0) is to
                                   format the output to the console. If the
                                   user would prefer to output the details to a
                                   PowerPoint file, the 1 value can be used.
                                   [default: 0]
+  -i, --item <TEXT CHOICE INTEGER INTEGER>...
+                                  The assortment feature. Provides the ability
+                                  to query trends, lists, categories, and
+                                  search in one command. The entire assortment
+                                  is specialized to ignore duplicates. Each
+                                  item must be specified as a tuple of uid,
+                                  type of article, n (number of articles), and
+                                  m (chunk size for processing). The order is
+                                  important, and must be (uid, type, n, m).
+                                  The type of article must be an integer from
+                                  1 through 4 inclusive,
+                                  
+                                  [1] trends
+                                  [2] lists
+                                  [3] categories
+                                  [4] search
+                                  [required]
   -l, --loglevel [10|20|30|40|50]
                                   The log level of the root Python logger. The
                                   API default is to log anything at or above
                                   the INFO level. Decrease the value to view
                                   more verbose logs.  [default: 20]
+  -m INTEGER                      Size of a simultaneously-processed article
+                                  chunk. The API default is to process 100
+                                  articles at one time. Decrease this value to
+                                  reduce memory usage.  [default: 100]
+  -n INTEGER                      Number of articles. The API default is to
+                                  return 50 articles matching the provided
+                                  uid, but the `n` option is used to customize
+                                  this value.  [default: 50]
   -p, --path PATH                 The path to write any output files. If one
                                   is not passed, the output path will be the
                                   current path.
+  -t, --timeout INTEGER           Number of seconds until a request times out.
+                                  The API default is to allow 10 seconds for a
+                                  request to complete. If you are receiving
+                                  several timeout exceptions, try to increaase
+                                  this value.  [default: 10]
   -x, --pixels <INTEGER INTEGER>...
                                   The maximum resolution of any created image
                                   files. The API default is to limit a
@@ -109,8 +119,21 @@ Options:
                                   be halted when the aspect ratio forces the
                                   larger dimension to hit the boundary
                                   specified here.  [default: 300, 300]
+  -y, --proxy TEXT                The HTTP url of a proxy server. The API
+                                  default is to not use a proxy server, but if
+                                  the TrendHunter API bans your IP address,
+                                  you can provide one here. Please try to use
+                                  a VPN before resorting to using a proxy
+                                  server. If you do need to use a proxy,
+                                  please be aware of the considerable risk if
+                                  the provider is not secure.
   --help                          Show this message and exit.
 ```
+**Note** `-b, --best` is only recognized when using the
+`assortment`, `categories`, or `search` subcommand.
+
+**Note** `-i, --item` is only recognized when using the
+`assortment` subcommand.
 
 At any point, if you get stuck and would like to reference the
 required and optional arguments, you can view the Click help page
@@ -130,7 +153,7 @@ trendhunter trends -n 5 -f 1 -p ../test/ holiday-giveaways
 trendhunter lists 2023-tech-trends
 ```
 ```
-trendhunter categories -l 10 -f 1 -n 200 -k 3 food
+trendhunter categories -l 10 -f 1 -n 200 -m 3 food
 ```
 ```
 trendhunter search candy

@@ -182,16 +182,10 @@ class URLIterator(ABC):
 
 
 class ArticleURLIterator(URLIterator):
-    def __init__(
-        self,
-        eid: str,
-        cid: str,
-        page_type: PageType,
-    ):
+    def __init__(self, eid: str, cid: str):
         super().__init__()
         self.eid = eid
         self.cid = cid
-        self.page_type = page_type
 
     def __next__(self) -> str:
         """"""
@@ -209,15 +203,16 @@ class ArticleURLIterator(URLIterator):
             params["cid"] = self.cid
 
         return sync_url_and_params(
-            urljoin(TRENDHUNTER_URL, self.page_type), params
+            urljoin(TRENDHUNTER_URL, PageType.TREND), params
         )
 
 
 class PageTypeURLIterator(URLIterator):
-    def __init__(self, uid: str, page_type: PageType):
+    def __init__(self, uid: str, page_type: PageType, is_best: bool):
         super().__init__()
         self.uid = uid
         self.page_type = page_type
+        self.is_best = is_best
 
     def __next__(self) -> str:
         """"""
@@ -232,6 +227,9 @@ class PageTypeURLIterator(URLIterator):
             "v": self.uid,
             "t": PageType.TREND,
         }
+
+        if self.is_best:
+            params["s"] = "best"
 
         return sync_url_and_params(TRENDHUNTER_URL, params)
 
@@ -341,7 +339,13 @@ class TrendHunterAPI:
         )
 
     def execute(
-        self, uid: str, page_type: PageType, n: int, m: int, urls: set
+        self,
+        uid: str,
+        page_type: PageType,
+        n: int,
+        m: int,
+        urls: set,
+        is_best: bool = False,
     ):
         extra, extra_resources = [], []
 
@@ -367,10 +371,9 @@ class TrendHunterAPI:
             iterator = ArticleURLIterator(
                 article.text.metadata.eid,
                 article.text.metadata.cid,
-                page_type,
             )
         else:
-            iterator = PageTypeURLIterator(uid, page_type)
+            iterator = PageTypeURLIterator(uid, page_type, is_best)
 
         yield from self._fetch_all(
             iterator, n - len(extra), m, urls, extra, extra_resources

@@ -62,7 +62,7 @@ async def _async_get_url(
                 raise ResourceError(f'No content retrieved from "{url}".')
 
             return Resource(url, content)
-        except (ClientError, ResourceError) as e:
+        except (ClientError, ResourceError, TimeoutError) as e:
             if propagate:
                 raise e
             else:

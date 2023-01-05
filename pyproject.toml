@@ -1,6 +1,6 @@
 [project]
 name = "trendhunter"
-version = "0.07"
+version = "0.0.8"
 license = {file = "LICENSE.txt"}
 authors = [
     { name = "Jake Ballantyne", email = "jake.david.ballantyne@gmail.com"},

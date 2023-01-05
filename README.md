@@ -3,6 +3,7 @@
 ## Overview
 The TrendHunter API is a command line interface for scraping information
 from the TrendHunter Ideas database.
+- `assortment`
 - `trends`
 - `lists`
 - `categories`
@@ -43,20 +44,52 @@ following in order,
 
 
 ## Usage
+Before using the API, ensure you are in the correct directory and
+have activated your virtual environment. You can find your created
+trendhunter directory with,
+```
+find ~ -type d -name trendhunter
+```
+
+Copy the correct location and use it to navigate and start your
+virtual environment. Using `/jbal/trendhunter` as my directory,
+```
+cd /jbal/trendhunter && source venv/bin/activate
+```
+
+Upgrade your environment to hold the latest version of `trendhunter`, as
+it may have been updated recently,
+```
+pip install trendhunter --upgrade
+```
+
 The API is implemented through Python Click, a command line
-interface. The API implements 4 subcommands,
+interface. The API implements 5 subcommands,
+- `assortment`
 - `trends`
 - `lists`
 - `categories`
 - `search`
 
-Every command accepts a number of optional arguments, and one
+The `trends`, `lists, `categories`, and `search` commands are very similar,
+because they accept a variety of optional arguments, and one
 required argument. The required argument is the name of the TrendHunter 
 site from which you want to base your query. This argument is called the
 `uid`, and must come after the subcommand.
+```
+trendhunter trends [OPTIONS] UID
+```
 
-The following excerpt describes every option that can be passed to
-the API via the console,
+The `assortment` subcommand is unique, in that it does not accept a `uid`
+argument. Instead, it requires at least one `-i, --item` optional argument.
+The `assortment` continues to accept a variety of other optional
+arguments, with a couple exceptions detailed below.
+```
+trendhunter assortment [OPTIONS]
+```
+
+The following excerpt describes every optional argument that can
+be passed to the API via the console,
 ```
   -b, --best                      Specify that the API should use the 'best'
                                   searching algorithm. By default the API is
@@ -129,11 +162,14 @@ the API via the console,
                                   the provider is not secure.
   --help                          Show this message and exit.
 ```
+
 **Note** `-b, --best` is only recognized when using the
 `assortment`, `categories`, or `search` subcommand.
 
 **Note** `-i, --item` is only recognized when using the
-`assortment` subcommand.
+`assortment` subcommand. Further, the `-m` and `-n` options are not recognized
+for the `assortment` subcommand, because they are enveloped in the
+`-i, --item` option.
 
 At any point, if you get stuck and would like to reference the
 required and optional arguments, you can view the Click help page

@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from urllib.parse import quote_plus
 from typing import Callable, Optional, Tuple, List
 
 import click
@@ -371,7 +372,7 @@ def search(
     with TrendHunterAPI(concurrency, proxy, timeout) as api:
         for articles in catch_execute(
             api.execute,
-            slugify(uid),
+            quote_plus(uid),
             PageType.SEARCH,
             n,
             m,

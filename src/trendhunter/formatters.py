@@ -43,9 +43,17 @@ def slideshow(articles: List[Article], context: Context) -> None:
     for article in articles:
         slide = show.slides.add_slide(show.slide_layouts[8])
         slide.placeholders[0].text = article.text.title
-        slide.placeholders[1].insert_picture(
-            resize_image(article.image, context.size)
-        )
+
+        # only insert picture if it can be resized properly
+        try:
+            im = resize_image(article.image, context.size)
+        except (IOError, OSError) as e:
+            format_console(__name__).error(
+                f'Error resizing image from "{article.image.url}". Error: {e}.'
+            )
+        else:
+            slide.placeholders[1].insert_picture(im)
+
         slide.placeholders[2].text = article.text.description
 
     show.save(path)

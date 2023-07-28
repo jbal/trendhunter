@@ -3,11 +3,6 @@
 ## Overview
 The TrendHunter API is a command line interface for scraping information
 from the TrendHunter Ideas database.
-- `assortment`
-- `trends`
-- `lists`
-- `categories`
-- `search`
 
 ## Installation
 **Optional** Create a dedicated directory, create an isolated

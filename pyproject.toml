@@ -1,6 +1,6 @@
 [project]
 name = "trendhunter"
-version = "0.0.11"
+version = "1.0.0"
 license = {file = "LICENSE.txt"}
 authors = [
     { name = "Jake Ballantyne", email = "jake.david.ballantyne@gmail.com"},
@@ -17,6 +17,7 @@ dependencies = [
     "python-pptx>=0.6.21",
     "python-slugify>=7.0.0",
     "build>=0.9.0",
+    "requests>=2.31.0",
 ]
 keywords = [
     "API"

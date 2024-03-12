@@ -13,7 +13,7 @@ from trendhunter.api import ResourceError, TrendHunterAPI
 from trendhunter.formatters import console, slideshow
 from trendhunter.taxonomies import PageType
 from trendhunter.tuples import Context
-from trendhunter.utils import format_console
+from trendhunter.utils import format_console, TokenBucket
 
 FORMATTERS = [console, slideshow]
 ITEMS = {
@@ -227,6 +227,19 @@ through 4 inclusive,
 """,
 )
 
+rate = click.option(
+    "-r",
+    "--rate",
+    "rate",
+    default=None,
+    type=click.FLOAT,
+    help="""
+Rate is used to limit the API request frequency. Plug
+in a positive integer or float to represent rate / second.
+""",
+    show_default=True,
+)
+
 uid = click.argument("uid")
 
 
@@ -245,6 +258,7 @@ def cli() -> None:
 @log_level
 @path
 @size
+@rate
 @uid
 def trends(
     n: int,
@@ -256,11 +270,17 @@ def trends(
     log_level: str,
     path: Optional[Path],
     size: Tuple[int],
+    rate: Optional[float],
     uid: str,
 ):
+    if rate is not None:
+        bucket = TokenBucket(2, rate)
+    else:
+        bucket = None
+
     formatters, context = setup(log_level, int(format), size, path)
 
-    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+    with TrendHunterAPI(concurrency, proxy, timeout, bucket) as api:
         for articles in catch_execute(
             api.execute, slugify(uid), PageType.TREND, n, m, set()
         ):
@@ -278,6 +298,7 @@ def trends(
 @log_level
 @path
 @size
+@rate
 @uid
 def lists(
     n: int,
@@ -289,11 +310,17 @@ def lists(
     log_level: str,
     path: Optional[Path],
     size: Tuple[int],
+    rate: Optional[float],
     uid: str,
 ):
+    if rate is not None:
+        bucket = TokenBucket(2, rate)
+    else:
+        bucket = None
+
     formatters, context = setup(log_level, int(format), size, path)
 
-    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+    with TrendHunterAPI(concurrency, proxy, timeout, bucket) as api:
         for articles in catch_execute(
             api.execute, slugify(uid), PageType.LIST, n, m, set()
         ):
@@ -312,6 +339,7 @@ def lists(
 @path
 @size
 @best
+@rate
 @uid
 def categories(
     n: int,
@@ -324,11 +352,17 @@ def categories(
     path: Optional[Path],
     size: Tuple[int],
     best: bool,
+    rate: Optional[float],
     uid: str,
 ):
+    if rate is not None:
+        bucket = TokenBucket(2, rate)
+    else:
+        bucket = None
+
     formatters, context = setup(log_level, int(format), size, path)
 
-    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+    with TrendHunterAPI(concurrency, proxy, timeout, bucket) as api:
         for articles in catch_execute(
             api.execute,
             slugify(uid, separator=""),
@@ -353,6 +387,7 @@ def categories(
 @path
 @size
 @best
+@rate
 @uid
 def search(
     n: int,
@@ -365,11 +400,17 @@ def search(
     path: Optional[Path],
     size: Tuple[int],
     best: bool,
+    rate: Optional[float],
     uid: str,
 ):
+    if rate is not None:
+        bucket = TokenBucket(2, rate)
+    else:
+        bucket = None
+
     formatters, context = setup(log_level, int(format), size, path)
 
-    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+    with TrendHunterAPI(concurrency, proxy, timeout, bucket) as api:
         for articles in catch_execute(
             api.execute,
             quote_plus(uid),
@@ -392,6 +433,7 @@ def search(
 @path
 @size
 @best
+@rate
 @items
 def assortment(
     concurrency: int,
@@ -402,11 +444,17 @@ def assortment(
     path: Optional[Path],
     size: Tuple[int],
     best: bool,
+    rate: Optional[float],
     items: List[Tuple[str, int, int, int]],
 ):
+    if rate is not None:
+        bucket = TokenBucket(2, rate)
+    else:
+        bucket = None
+
     formatters, context = setup(log_level, int(format), size, path)
 
-    with TrendHunterAPI(concurrency, proxy, timeout) as api:
+    with TrendHunterAPI(concurrency, proxy, timeout, bucket) as api:
         all_urls = set()
 
         for uid, page_type, n, m in items:

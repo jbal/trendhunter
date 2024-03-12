@@ -155,6 +155,10 @@ be passed to the API via the console,
                                   server. If you do need to use a proxy,
                                   please be aware of the considerable risk if
                                   the provider is not secure.
+  -r, --rate FLOAT                Rate is used to limit the API request
+                                  frequency. Plug in a positive integer or
+                                  float to represent rate / second. This will apply
+                                  to every outbound request.
   --help                          Show this message and exit.
 ```
 

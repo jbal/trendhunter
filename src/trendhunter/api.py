@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import requests
 from abc import ABC, abstractmethod
 from asyncio import Semaphore
 from itertools import chain
@@ -20,7 +21,7 @@ from trendhunter.tuples import (
     Text,
     URLPair,
 )
-from trendhunter.utils import format_console
+from trendhunter.utils import format_console, TokenBucket
 
 STATIC_URL = "https://cdn.trendhunterstatic.com/thumbs/"
 BASE_URL = "https://www.trendhunter.com/"
@@ -43,27 +44,47 @@ async def _async_get_url(
     proxy: Optional[str],
     timeout: int,
     propagate: bool,
+    bucket: Optional[TokenBucket],
 ) -> Optional[Resource]:
     async with semaphore:
         try:
             format_console(__name__).info(
                 f'Downloading content from "{url}"...'
             )
-
-            async with session.get(
+            _request = session.get(
                 url,
                 proxy=proxy,
                 allow_redirects=False,
                 timeout=timeout,
                 raise_for_status=True,
-            ) as resp:
-                content = await resp.read()
+            )
+
+            if bucket:
+                async with bucket:
+                    async with _request as resp:
+                        content = await resp.read()
+            else:
+                async with _request as resp:
+                    content = await resp.read()
 
             if not (content.find(b'{"success":true,"data":""}') == -1):
                 raise ResourceError(f'No content retrieved from "{url}".')
 
             return Resource(url, content)
         except (ClientError, ResourceError, TimeoutError) as e:
+            # try to monkey patch with requests
+            try:
+                if bucket:
+                    async with bucket:
+                        requests_res = requests.get(url)
+                else:
+                    requests_res = requests.get(url)
+            except:
+                pass
+            else:
+                if requests_res.status_code == 200:
+                    return Resource(url, requests_res.text)
+
             if propagate:
                 raise e
             else:
@@ -79,6 +100,7 @@ async def _async_bridge(
     proxy: Optional[str],
     timeout: int,
     propagate: bool,
+    bucket: Optional[TokenBucket],
 ) -> Union[List[Resource], Resource]:
     if isinstance(urls, (list, tuple)):
         resources = []
@@ -86,14 +108,14 @@ async def _async_bridge(
         for url in urls:
             resources.append(
                 await _async_get_url(
-                    url, semaphore, session, proxy, timeout, propagate
+                    url, semaphore, session, proxy, timeout, propagate, bucket
                 )
             )
 
         return resources
     else:
         return await _async_get_url(
-            urls, semaphore, session, proxy, timeout, propagate
+            urls, semaphore, session, proxy, timeout, propagate, bucket
         )
 
 
@@ -103,12 +125,15 @@ async def async_get_urls(
     proxy: Optional[str],
     timeout: int,
     propagate: bool = False,
+    bucket: Optional[TokenBucket] = None,
 ) -> Union[List[List[Resource]], List[Resource]]:
     semaphore = Semaphore(concurrency)
 
     async with ClientSession() as session:
         tasks = [
-            _async_bridge(url, semaphore, session, proxy, timeout, propagate)
+            _async_bridge(
+                url, semaphore, session, proxy, timeout, propagate, bucket
+            )
             for url in urls
         ]
         return await asyncio.gather(*tasks)
@@ -248,10 +273,12 @@ class TrendHunterAPI:
         concurrency: int,
         proxy: Optional[str],
         timeout: int,
+        bucket: Optional[TokenBucket] = None,
     ):
         self.concurrency = concurrency
         self.proxy = proxy
         self.timeout = timeout
+        self.bucket = bucket
 
     def __enter__(self):
         logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)
@@ -284,6 +311,7 @@ class TrendHunterAPI:
                     self.proxy,
                     self.timeout,
                     propagate=True,
+                    bucket=self.bucket,
                 )
             )
 
@@ -306,7 +334,11 @@ class TrendHunterAPI:
             chunked_urls, urls = urls[:m], urls[m:]
             subresources = asyncio.run(
                 async_get_urls(
-                    chunked_urls, self.concurrency, self.proxy, self.timeout
+                    chunked_urls,
+                    self.concurrency,
+                    self.proxy,
+                    self.timeout,
+                    bucket=self.bucket,
                 )
             )
 
@@ -339,6 +371,7 @@ class TrendHunterAPI:
                 self.proxy,
                 self.timeout,
                 propagate=True,
+                bucket=self.bucket,
             )
         )
 

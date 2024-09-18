@@ -66,7 +66,7 @@ interface. The API implements 5 subcommands,
 - `categories`
 - `search`
 
-The `trends`, `lists, `categories`, and `search` commands are very similar,
+The `trends`, `lists`, `categories`, and `search` commands are very similar,
 because they accept a variety of optional arguments, and one
 required argument. The required argument is the name of the TrendHunter 
 site from which you want to base your query. This argument is called the
